@@ -2,3 +2,9 @@
 	path = rocket-chip
 	url = https://github.com/U-interrupt/rocket-chip
 	branch = v1.6
+[submodule "spike"]
+	path = spike
+	url = https://github.com/U-interrupt/riscv-isa-sim
+[submodule "tests"]
+	path = tests
+	url = https://github.com/U-interrupt/riscv-tests

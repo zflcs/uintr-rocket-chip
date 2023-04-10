@@ -5,6 +5,7 @@
 [submodule "spike"]
 	path = spike
 	url = https://github.com/U-interrupt/riscv-isa-sim
+	branch = dev
 [submodule "tests"]
 	path = tests
 	url = https://github.com/U-interrupt/riscv-tests

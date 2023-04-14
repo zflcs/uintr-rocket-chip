@@ -22,11 +22,12 @@ src/rtl/%.v: $(ROCKET_DIR)/emulator/generated-src/%.v
 src/rtl/$(PROJECT).$(CONFIG).v:
 
 # Build with custom generator and SoC configurations
-build: init src/rtl/$(PROJECT).$(CONFIG).v
+build: src/rtl/$(PROJECT).$(CONFIG).v
 
 # Testbench generated and simulated by default configurations of rocket chip
-test: init
-	make -C $(ROCKET_DIR)/emulator/
+test:
+	make -C $(ROCKET_DIR)/emulator/ \
+		output/rv64sn-p-csr.out output/rv64sn-p-csr.vcd
 	
 clean:
 	rm -f *.log *.jou *.str

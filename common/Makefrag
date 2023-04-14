@@ -1,0 +1,32 @@
+# This makefrag is sourced by each board's subdirectory
+
+ROOT_DIR = $(abspath ..)
+COMMON_DIR = $(ROOT_DIR)/common
+ROCKET_DIR = $(ROOT_DIR)/rocket-chip
+PROJECT := freechips.rocketchip.uintr
+CONFIG := $(PROJECT).UintrConfig
+
+# Initialize submodules and packages
+init:
+	cd $(ROOT_DIR) && git submodule update --init --recursive
+	rm -rf $(ROCKET_DIR)/src/main/scala/uintr
+	ln -rs $(COMMON_DIR)/src/main/scala $(ROCKET_DIR)/src/main/scala/uintr
+
+# Build rocket tools: tests, spike
+build-tools:
+	./build.sh
+
+src/rtl/%.v: $(ROCKET_DIR)/emulator/generated-src/%.v
+	cp $< $@
+
+src/rtl/$(PROJECT).$(CONFIG).v:
+
+# Build with custom generator and SoC configurations
+build: init src/rtl/$(PROJECT).$(CONFIG).v
+
+# Testbench generated and simulated by default configurations of rocket chip
+test: init
+	make -C $(ROCKET_DIR)/emulator/
+	
+clean:
+	rm -f *.log *.jou *.str

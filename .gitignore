@@ -1,5 +1,10 @@
-*.log
-
+.idea/
 .vscode/
 
 build/
+
+out/
+target/
+project/target/
+
+*.log

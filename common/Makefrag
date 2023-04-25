@@ -27,7 +27,10 @@ build: src/rtl/$(PROJECT).$(CONFIG).v
 # Testbench generated and simulated by default configurations of rocket chip
 test:
 	make -C $(ROCKET_DIR)/emulator/ \
-		output/rv64sn-p-csr.out output/rv64sn-p-csr.vcd
+		timeout_cycles=50000 \
+		output/rv64sn-p-uipi.vcd
 	
 clean:
 	rm -f *.log *.jou *.str
+	make -C $(ROCKET_DIR)/emulator/ clean
+	rm -f $(ROCKET_DIR)/rocketchip.jar

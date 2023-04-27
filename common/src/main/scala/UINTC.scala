@@ -19,24 +19,25 @@ class UIRS extends Bundle {
 }
 
 object UINTCConsts {
-  def size = 0x4000
-
+  def base: BigInt = 0x03000000
+  def size = 0x400
   def opBytes = 32
 
+  def sendOpOffset = 0x00
+  def lowOpOffset = 0x08
+  def highOpOffset = 0x10
+  def actOpOffset = 0x18
+
+  def opOffset(index: Int) = index << log2Ceil(opBytes)
+  def sendOffset(index: Int) = opOffset(index) + sendOpOffset
+  def lowOffset(index: Int) = opOffset(index) + lowOpOffset
+  def highOffset(index: Int) = opOffset(index) + highOpOffset
+  def actOffset(index: Int) = opOffset(index) + actOpOffset
+
   def nRecvs = size / opBytes
-
-  def opOffset(index: Int) = index * opBytes
-
-  def sendOffset(index: Int) = opOffset(index) + 0x00
-
-  def lowOffset(index: Int) = opOffset(index) + 0x08
-
-  def highOffset(index: Int) = opOffset(index) + 0x10
-
-  def actOffset(index: Int) = opOffset(index) + 0x18
 }
 
-case class UINTCParams(baseAddress: BigInt = 0x03000000, intStages: Int = 0) {
+case class UINTCParams(baseAddress: BigInt = UINTCConsts.base, intStages: Int = 0) {
   def address = AddressSet(baseAddress, UINTCConsts.size - 1)
 }
 

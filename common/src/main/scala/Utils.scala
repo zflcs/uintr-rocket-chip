@@ -1,13 +1,10 @@
 package freechips.rocketchip.uintr
 
-import chisel3._
+import Chisel._
 
-trait UintrConsts {
-  def UIPI_SEND       = 0.U(12.W)
-  def UIPI_READ       = 1.U(12.W)
-  def UIPI_WRITE      = 2.U(12.W)
-  def UIPI_ACTIVATE   = 3.U(12.W)
-  def UIPI_DEACTIVATE = 4.U(12.W)
+object UintrConsts {
+  def uisteBytes = 8.U
+  def uisteBits = 64.U
 }
 
 class SUIRS extends Bundle {
@@ -26,5 +23,12 @@ class SUIST() extends Bundle {
 class CSRUintrIO extends Bundle {
   val suirs = new SUIRS()
   val suist = new SUIST()
-  val suicfg = UInt(64.W)
+}
+
+class UISTE() extends Bundle {
+  val uirs_idx = UInt(16.W)
+  val zero2 = UInt(16.W)
+  val vector = UInt(16.W)
+  val zero1 = UInt(15.W)
+  val valid = Bool()
 }

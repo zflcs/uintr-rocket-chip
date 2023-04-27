@@ -27,6 +27,7 @@ build: src/rtl/$(PROJECT).$(CONFIG).v
 # Testbench generated and simulated by default configurations of rocket chip
 test:
 	make -C $(ROCKET_DIR)/emulator/ \
+		CONFIG=$(CONFIG) \
 		timeout_cycles=50000 \
 		output/rv64sn-p-uipi.vcd
 	

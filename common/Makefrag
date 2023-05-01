@@ -20,6 +20,10 @@ src/rtl/%.v: $(ROCKET_DIR)/emulator/generated-src/%.v
 	cp $< $@
 
 src/rtl/$(PROJECT).$(CONFIG).v:
+	make -C $(ROCKET_DIR)/emulator/ \
+		PROJECT=$(PROJECT) CONFIG=$(CONFIG) MODEL=Top \
+		verilog
+
 
 # Build with custom generator and SoC configurations
 build: src/rtl/$(PROJECT).$(CONFIG).v

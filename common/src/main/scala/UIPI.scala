@@ -6,10 +6,10 @@ import freechips.rocketchip.config.Parameters
 import freechips.rocketchip.rocket._
 
 class UIPI(opcodes: OpcodeSet)(implicit p: Parameters) extends LazyRoCC(opcodes) {
-  override lazy val module = new UIPIImpl(this)
+  override lazy val module = new UIPIImp(this)
 }
 
-class UIPIImpl(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(outer)
+class UIPIImp(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(outer)
   with HasCoreParameters
   with HasTileParameters {
   import UINTCConsts._
@@ -84,7 +84,7 @@ class UIPIImpl(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(ou
 
   // Response
   io.resp.valid := state === s_resp && (io.mem.resp.valid || !read_valid)
-  io.resp.bits.rd := Mux(read_valid, io.cmd.bits.inst.rd, 0.U)
+  io.resp.bits.rd := io.cmd.bits.inst.rd
   io.resp.bits.data := io.mem.resp.bits.data
   when(io.resp.fire) {
     state := s_idle

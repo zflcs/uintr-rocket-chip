@@ -16,17 +16,17 @@ init:
 build-tools:
 	./build.sh
 
-src/rtl/%.v: $(ROCKET_DIR)/emulator/generated-src/%.v
-	cp $< $@
-
-src/rtl/$(PROJECT).$(CONFIG).v:
+$(ROCKET_DIR)/emulator/generated-src/$(CONFIG).v:
 	make -C $(ROCKET_DIR)/emulator/ \
 		PROJECT=$(PROJECT) CONFIG=$(CONFIG) MODEL=Top \
 		verilog
 
+src/rtl/$(CONFIG).v: $(ROCKET_DIR)/emulator/generated-src/$(CONFIG).v
+	cp $< $@
 
 # Build with custom generator and SoC configurations
-build: src/rtl/$(PROJECT).$(CONFIG).v
+build: src/rtl/$(CONFIG).v
+	cp $(COMMON_DIR)/rocketchip_wrapper.v ./src/rtl/
 
 # Testbench generated and simulated by default configurations of rocket chip
 test:

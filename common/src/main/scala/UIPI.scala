@@ -37,6 +37,7 @@ class UIPIImp(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(out
   val read_uist = state === s_wait_mem0
   val busy = state =/= s_idle
   val read_valid = RegInit(false.B) // keep read funct in register
+  val read_rd = RegInit(0.U(5.W))
 
   // Control
   io.busy := busy // io.cmd will be held
@@ -62,6 +63,7 @@ class UIPIImp(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(out
     uintc_addr := opAddr(uintr.suirs.index) | Mux(write || read, highOpOffset.asUInt, actOpOffset.asUInt)
     uintc_data := Mux(write, io.cmd.bits.rs1, Mux(activate, 1.U, 0.U))
     read_valid := read
+    read_rd := io.cmd.bits.inst.rd
   }
 
   // Stage 1: Load sender status
@@ -84,7 +86,7 @@ class UIPIImp(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(out
 
   // Response
   io.resp.valid := state === s_resp && (io.mem.resp.valid || !read_valid)
-  io.resp.bits.rd := io.cmd.bits.inst.rd
+  io.resp.bits.rd := read_rd
   io.resp.bits.data := io.mem.resp.bits.data
   when(io.resp.fire) {
     state := s_idle

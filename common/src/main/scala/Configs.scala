@@ -4,13 +4,13 @@ import freechips.rocketchip.config._
 import freechips.rocketchip.devices.tilelink._
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.subsystem._
+import freechips.rocketchip.system._
 import freechips.rocketchip.tile._
 
 class WithBootROM extends Config((_, _, _) => {
-  case BootROMParams => BootROMParams(
+  case BootROMLocated(InSubsystem) => Some(BootROMParams(
     hang = 0x10000,
-    contentFileName = s"../bootrom.img"
-  )
+    contentFileName = "../common/bootrom/bootrom.img"))
 })
 
 class WithUIPI extends Config((_, _, _) => {
@@ -33,3 +33,5 @@ class UintrConfig extends Config(
     new WithoutTLMonitors ++
     new WithCoherentBusTopology
 )
+
+class UintrTestConfig extends Config(new DefaultConfig ++ new WithUIPI)

@@ -13,3 +13,6 @@
 	path = pk
 	url = git@github.com:U-interrupt/riscv-pk.git
 	branch = v1.0.0
+[submodule "digilent-vivado-scripts"]
+	path = digilent-vivado-scripts
+	url = https://github.com/Digilent/digilent-vivado-scripts

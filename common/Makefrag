@@ -3,8 +3,8 @@
 ROOT_DIR = $(abspath ..)
 COMMON_DIR = $(ROOT_DIR)/common
 ROCKET_DIR = $(ROOT_DIR)/rocket-chip
-PROJECT := freechips.rocketchip.uintr
-CONFIG := $(PROJECT).UintrConfig
+PROJECT ?= freechips.rocketchip.uintr
+CONFIG ?= $(PROJECT).UintrConfig
 
 # Initialize submodules and packages
 init:
@@ -16,26 +16,78 @@ init:
 build-tools:
 	./build.sh
 
-$(ROCKET_DIR)/emulator/generated-src/$(CONFIG).v:
-	make -C $(ROCKET_DIR)/emulator/ \
-		PROJECT=$(PROJECT) CONFIG=$(CONFIG) MODEL=Top \
-		verilog
+-include $(ROCKET_DIR)/Makefrag
 
-src/rtl/$(CONFIG).v: $(ROCKET_DIR)/emulator/generated-src/$(CONFIG).v
-	cp $< $@
+#--------------------------------------------------------------------
+# Testbench generated and simulated by default configurations of rocket chip
+#--------------------------------------------------------------------
+
+test_cycles ?= 100000
+emu = emulator-$(PROJECT)-$(CONFIG)
+riscv_tests = $(RISCV)/riscv64-unknown-elf/share/riscv-tests
+
+test:
+	make -C $(ROCKET_DIR)/emulator/ PROJECT=$(PROJECT) CONFIG=$(CONFIG) MODEL=TestHarness
+	$(ROCKET_DIR)/emulator/$(emu) +max-cycles=$(test_cycles) +verbose $(riscv_tests)/isa/rv64sn-p-csr 2> csr.out
+	$(ROCKET_DIR)/emulator/$(emu) +max-cycles=$(test_cycles) +verbose $(riscv_tests)/isa/rv64sn-p-uintc 2> uintc.out
+	$(ROCKET_DIR)/emulator/$(emu) +max-cycles=$(test_cycles) +verbose $(riscv_tests)/isa/rv64sn-p-uipi 2> uipi.out
+
+
+#--------------------------------------------------------------------
+# Rocket-chip verilog source generation
+#--------------------------------------------------------------------
+
+gen_rtl = $(ROCKET_DIR)/emulator/generated-src/$(long_name).v
+srams_rtl = $(ROCKET_DIR)/emulator/generated-src/$(long_name).behav_srams.v
+other_rtl = $(ROCKET_DIR)/src/main/resources/vsrc/AsyncResetReg.v \
+            $(ROCKET_DIR)/src/main/resources/vsrc/EICG_wrapper.v \
+            $(ROCKET_DIR)/src/main/resources/vsrc/plusarg_reader.v
+
+rocketchip_rtl = src/rtl/rocketchip_$(BOARD).v
+	
+# Build SoC
+$(gen_rtl):
+	make -C $(ROCKET_DIR)/emulator/ PROJECT=$(PROJECT) CONFIG=$(CONFIG) MODEL=Top verilog
+
+$(srams_rtl): $(gen_rtl)
+
+$(rocketchip_rtl): $(gen_rtl) $(srams_rtl) $(other_rtl)
+	cat $^ > $@
+
+bootrom:
+	make -C $(COMMON_DIR)/boot/bootrom
 
 # Build with custom generator and SoC configurations
-build: src/rtl/$(CONFIG).v
-	cp $(COMMON_DIR)/rocketchip_wrapper.v ./src/rtl/
+build: bootrom $(rocketchip_rtl)
+	cp $(COMMON_DIR)/system_wrapper.v src/rtl/
 
-# Testbench generated and simulated by default configurations of rocket chip
-test:
-	make -C $(ROCKET_DIR)/emulator/ \
-		CONFIG=$(CONFIG) \
-		timeout_cycles=50000 \
-		output/rv64sn-p-uipi.vcd
-	
+#--------------------------------------------------------------------
+# Software generation
+#--------------------------------------------------------------------
+
+%.dtb: %.dts
+	dtc -I dts -O dtb $< -o $@
+
+#--------------------------------------------------------------------
+# Vivado project
+#--------------------------------------------------------------------
+
+VIVADO_PROJ = $(BOARD)_rocketchip_UintrConfig
+VIVADO_FLAG = -nolog -nojournal -notrace
+
+gen_dts:
+	xsct $(COMMON_DIR)/gen_dts.tcl \
+		/tools/Xilinx/device-tree-xlnx $(VIVADO_PROJ)/system_wrapper.xsa zcu102 dts
+	cd dts && gcc -I include -E -nostdinc -undef -D__DTS__ -x assembler-with-cpp -o system.dts system-top.dts
+	dtc -I dts -O dtb -o dts/system.dtb dts/system.dts
+
+#--------------------------------------------------------------------
+# Clean rocket-chip project and rocketchip.jar
+#--------------------------------------------------------------------
+
 clean:
 	rm -f *.log *.jou *.str
 	make -C $(ROCKET_DIR)/emulator/ clean
 	rm -f $(ROCKET_DIR)/rocketchip.jar
+
+.PHONY: $(gen_rtl) build test clean

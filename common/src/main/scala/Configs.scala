@@ -1,17 +1,16 @@
 package freechips.rocketchip.uintr
 
 import freechips.rocketchip.config._
-import freechips.rocketchip.devices.tilelink._
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.subsystem._
 import freechips.rocketchip.system._
 import freechips.rocketchip.tile._
+import freechips.rocketchip.devices.tilelink._
 
-class WithBootROM extends Config((_, _, _) => {
-  case BootROMLocated(InSubsystem) => Some(BootROMParams(
-    hang = 0x10000,
-    contentFileName = "../common/bootrom/bootrom.img"))
-})
+class WithCustomBootROM(resetAddress: BigInt, bootImgPath: String)
+  extends Config((_, _, up) => { case BootROMLocated(x) =>
+    up(BootROMLocated(x)).map(_.copy(hang = resetAddress, contentFileName = bootImgPath))
+  })
 
 class WithUIPI extends Config((_, _, _) => {
   case BuildRoCC => Seq((p: Parameters) => {
@@ -21,17 +20,17 @@ class WithUIPI extends Config((_, _, _) => {
 })
 
 class UintrConfig extends Config(
-  new BaseSubsystemConfig ++
-    new WithNBigCores(2) ++
+  new WithNBigCores(2) ++
     new WithNExtTopInterrupts(6) ++
     new WithTimebase((BigInt(10000000))) ++ // 10 MHz
     new WithDTS("freechips.rocketchip-unknown", Nil) ++
-    new WithBootROM ++
     new WithUIPI ++
+    new WithCustomBootROM(0x10000, "../common/boot/bootrom/bootrom.img") ++
     new WithDefaultMemPort ++
     new WithDefaultMMIOPort ++
     new WithoutTLMonitors ++
-    new WithCoherentBusTopology
+    new WithCoherentBusTopology ++
+    new BaseSubsystemConfig
 )
 
 class UintrTestConfig extends Config(new DefaultConfig ++ new WithUIPI)

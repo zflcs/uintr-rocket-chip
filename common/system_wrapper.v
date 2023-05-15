@@ -45,6 +45,7 @@ module system_wrapper(
   // MMIO_AXI
   wire        M_MMIO_AXI_awready;
   wire        M_MMIO_AXI_awvalid;
+  wire [3:0]  M_MMIO_AXI_awid;
   wire [31:0] M_MMIO_AXI_awaddr;
   wire [7:0]  M_MMIO_AXI_awlen;
   wire [2:0]  M_MMIO_AXI_awsize;
@@ -55,15 +56,16 @@ module system_wrapper(
   wire [3:0]  M_MMIO_AXI_awqos;
   wire        M_MMIO_AXI_wready;
   wire        M_MMIO_AXI_wvalid;
-  wire [31:0] M_MMIO_AXI_wdata;
+  wire [63:0] M_MMIO_AXI_wdata;
   wire [3:0]  M_MMIO_AXI_wstrb;
   wire        M_MMIO_AXI_wlast;
   wire        M_MMIO_AXI_bready;
   wire        M_MMIO_AXI_bvalid;
+  wire [3:0]  M_MMIO_AXI_bid;
   wire [1:0]  M_MMIO_AXI_bresp;
   wire        M_MMIO_AXI_arready;
   wire        M_MMIO_AXI_arvalid;
-  wire [5:0]  M_MMIO_AXI_arid;
+  wire [3:0]  M_MMIO_AXI_arid;
   wire [31:0] M_MMIO_AXI_araddr;
   wire [7:0]  M_MMIO_AXI_arlen;
   wire [2:0]  M_MMIO_AXI_arsize;
@@ -74,7 +76,8 @@ module system_wrapper(
   wire [3:0]  M_MMIO_AXI_arqos;
   wire        M_MMIO_AXI_rready;
   wire        M_MMIO_AXI_rvalid;
-  wire [31:0] M_MMIO_AXI_rdata;
+  wire [3:0]  M_MMIO_AXI_rid;
+  wire [63:0] M_MMIO_AXI_rdata;
   wire [1:0]  M_MMIO_AXI_rresp;
   wire        M_MMIO_AXI_rlast;
 
@@ -102,7 +105,7 @@ module system_wrapper(
     .S_AXI_awready      (M_AXI_awready      ),
     .S_AXI_awvalid      (M_AXI_awvalid      ),
     .S_AXI_awid         (M_AXI_awid         ),
-    .S_AXI_awaddr       (M_AXI_awaddr       ),
+    .S_AXI_awaddr       (M_AXI_awaddr[48:0] ),
     .S_AXI_awlen        (M_AXI_awlen        ),
     .S_AXI_awsize       (M_AXI_awsize       ),
     .S_AXI_awburst      (M_AXI_awburst      ),
@@ -123,7 +126,7 @@ module system_wrapper(
     .S_AXI_arready      (M_AXI_arready      ),
     .S_AXI_arvalid      (M_AXI_arvalid      ),
     .S_AXI_arid         (M_AXI_arid         ),
-    .S_AXI_araddr       (M_AXI_araddr       ),
+    .S_AXI_araddr       (M_AXI_araddr[48:0] ),
     .S_AXI_arlen        (M_AXI_arlen        ),
     .S_AXI_arsize       (M_AXI_arsize       ),
     .S_AXI_arburst      (M_AXI_arburst      ),
@@ -142,6 +145,7 @@ module system_wrapper(
     // slave AXI interface (fpga = master, zynq = slave) connected directly to UART
     .S_MMIO_AXI_awready (M_MMIO_AXI_awready ),
     .S_MMIO_AXI_awvalid (M_MMIO_AXI_awvalid ),
+    .S_MMIO_AXI_awid    (M_MMIO_AXI_awid    ),
     .S_MMIO_AXI_awaddr  (M_MMIO_AXI_awaddr  ),
     .S_MMIO_AXI_awlen   (M_MMIO_AXI_awlen   ),
     .S_MMIO_AXI_awsize  (M_MMIO_AXI_awsize  ),
@@ -158,9 +162,11 @@ module system_wrapper(
     .S_MMIO_AXI_wlast   (M_MMIO_AXI_wlast   ),
     .S_MMIO_AXI_bready  (M_MMIO_AXI_bready  ),
     .S_MMIO_AXI_bvalid  (M_MMIO_AXI_bvalid  ),
+    .S_MMIO_AXI_bid     (M_MMIO_AXI_bid     ),
     .S_MMIO_AXI_bresp   (M_MMIO_AXI_bresp   ),
     .S_MMIO_AXI_arready (M_MMIO_AXI_arready ),
     .S_MMIO_AXI_arvalid (M_MMIO_AXI_arvalid ),
+    .S_MMIO_AXI_arid    (M_MMIO_AXI_arid    ), 
     .S_MMIO_AXI_araddr  (M_MMIO_AXI_araddr  ),
     .S_MMIO_AXI_arlen   (M_MMIO_AXI_arlen   ),
     .S_MMIO_AXI_arsize  (M_MMIO_AXI_arsize  ),
@@ -172,16 +178,17 @@ module system_wrapper(
     .S_MMIO_AXI_arregion(),
     .S_MMIO_AXI_rready  (M_MMIO_AXI_rready  ),
     .S_MMIO_AXI_rvalid  (M_MMIO_AXI_rvalid  ),
+    .S_MMIO_AXI_rid     (M_MMIO_AXI_rid     ),
     .S_MMIO_AXI_rdata   (M_MMIO_AXI_rdata   ),
     .S_MMIO_AXI_rresp   (M_MMIO_AXI_rresp   ),
     .S_MMIO_AXI_rlast   (M_MMIO_AXI_rlast   )
   );
 
   Top top(
-    .clock                          (clock              ),
-    .reset                          (reset              ),
-    .io_sys_reset                   (sys_reset          ),
-    .io_ext_intrs                   (ext_intrs          ),
+    .clock                        (clock              ),
+    .reset                        (reset              ),
+    .io_sys_reset                 (sys_reset          ),
+    .io_ext_intrs                 (ext_intrs          ),
 
     // MEM
     .io_mem_axi4_aw_ready         (M_AXI_awready      ),
@@ -225,7 +232,7 @@ module system_wrapper(
     // MMIO
     .io_mmio_axi4_aw_ready        (M_MMIO_AXI_awready ),
     .io_mmio_axi4_aw_valid        (M_MMIO_AXI_awvalid ),
-    .io_mmio_axi4_aw_bits_id      (),
+    .io_mmio_axi4_aw_bits_id      (M_MMIO_AXI_awid    ),
     .io_mmio_axi4_aw_bits_addr    (mmio_awaddr        ),
     .io_mmio_axi4_aw_bits_len     (M_MMIO_AXI_awlen   ),
     .io_mmio_axi4_aw_bits_size    (M_MMIO_AXI_awsize  ),
@@ -241,11 +248,11 @@ module system_wrapper(
     .io_mmio_axi4_w_bits_last     (M_MMIO_AXI_wlast   ),
     .io_mmio_axi4_b_ready         (M_MMIO_AXI_bready  ),
     .io_mmio_axi4_b_valid         (M_MMIO_AXI_bvalid  ),
-    .io_mmio_axi4_b_bits_id       (),
+    .io_mmio_axi4_b_bits_id       (M_MMIO_AXI_bid     ),
     .io_mmio_axi4_b_bits_resp     (M_MMIO_AXI_bresp   ),
     .io_mmio_axi4_ar_ready        (M_MMIO_AXI_arready ),
     .io_mmio_axi4_ar_valid        (M_MMIO_AXI_arvalid ),
-    .io_mmio_axi4_ar_bits_id      (),
+    .io_mmio_axi4_ar_bits_id      (M_MMIO_AXI_arid    ),
     .io_mmio_axi4_ar_bits_addr    (mmio_araddr        ),
     .io_mmio_axi4_ar_bits_len     (M_MMIO_AXI_arlen   ),
     .io_mmio_axi4_ar_bits_size    (M_MMIO_AXI_arsize  ),
@@ -256,7 +263,7 @@ module system_wrapper(
     .io_mmio_axi4_ar_bits_qos     (M_MMIO_AXI_arqos   ),
     .io_mmio_axi4_r_ready         (M_MMIO_AXI_rready  ),
     .io_mmio_axi4_r_valid         (M_MMIO_AXI_rvalid  ),
-    .io_mmio_axi4_r_bits_id       (),
+    .io_mmio_axi4_r_bits_id       (M_MMIO_AXI_rid     ),
     .io_mmio_axi4_r_bits_data     (M_MMIO_AXI_rdata   ),
     .io_mmio_axi4_r_bits_resp     (M_MMIO_AXI_rresp   ),
     .io_mmio_axi4_r_bits_last     (M_MMIO_AXI_rlast   )

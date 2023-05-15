@@ -1,7 +1,38 @@
 zcu102_rocketchip_UintrConfig/
 
-.Xil/
+# root
+/*
+!.gitignore
+!project_info.tcl
+!proj/
+!repo/
+!src/
+!scripts/
+!hw_handoff/
+!dts
+!Makefile
 
-*.v
+# vivado workspace
+proj/*
 
+# hardware handoff
+hw_handoff/*
+!hw_handoff/*.xsa
+
+# ip repository
+repo/**
+!repo/vivado-library
+repo/vivado-library/**
+!repo/local
+!repo/local/**
+!repo/cache
+repo/cache/**
+
+# rocketchip test result
 *.out
+
+# rocketchip verilog
+src/hdl/*.v
+src/hdl/*.sv
+
+.Xil/

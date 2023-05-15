@@ -43,7 +43,7 @@ other_rtl = $(ROCKET_DIR)/src/main/resources/vsrc/AsyncResetReg.v \
             $(ROCKET_DIR)/src/main/resources/vsrc/EICG_wrapper.v \
             $(ROCKET_DIR)/src/main/resources/vsrc/plusarg_reader.v
 
-rocketchip_rtl = src/rtl/rocketchip_$(BOARD).v
+rocketchip_rtl = src/hdl/rocketchip_$(BOARD).v
 	
 # Build SoC
 $(gen_rtl):
@@ -59,7 +59,7 @@ bootrom:
 
 # Build with custom generator and SoC configurations
 build: bootrom $(rocketchip_rtl)
-	cp $(COMMON_DIR)/system_wrapper.v src/rtl/
+	cp $(COMMON_DIR)/system_wrapper.v src/hdl/
 
 #--------------------------------------------------------------------
 # Software generation
@@ -72,8 +72,15 @@ build: bootrom $(rocketchip_rtl)
 # Vivado project
 #--------------------------------------------------------------------
 
-VIVADO_PROJ = $(BOARD)_rocketchip_UintrConfig
-VIVADO_FLAG = -nolog -nojournal -notrace
+VIVADO_PROJ = rocket-chip-zcu102
+VIVADO_PROJ_DIR = proj
+DIGILENT_DIR = $(ROOT_DIR)/digilent-vivado-scripts
+
+checkin:
+	python3 $(DIGILENT_DIR)/git_vivado.py checkin -r . -x $(VIVADO_PROJ_DIR)/$(VIVADO_PROJ).xpr
+
+checkout:
+	python3 $(DIGILENT_DIR)/git_vivado.py checkout -r . -x $(VIVADO_PROJ_DIR)/$(VIVADO_PROJ).xpr
 
 gen_dts:
 	xsct $(COMMON_DIR)/gen_dts.tcl \

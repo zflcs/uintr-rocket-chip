@@ -28,6 +28,9 @@ repo/vivado-library/**
 !repo/cache
 repo/cache/**
 
+# maintain required directories
+!**/.keep
+
 # rocketchip test result
 *.out
 

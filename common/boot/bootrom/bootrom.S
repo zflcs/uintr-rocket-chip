@@ -1,5 +1,5 @@
 #define DRAM_BASE 0x80000000
-#define GPIO_BASE 0x60001000
+#define GPIO_BASE 0x60010000
 
 .section .text.start, "ax", @progbits
 .globl _start

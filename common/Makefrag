@@ -84,7 +84,7 @@ checkout:
 
 gen_dts:
 	xsct $(COMMON_DIR)/gen_dts.tcl \
-		/tools/Xilinx/device-tree-xlnx $(VIVADO_PROJ)/system_wrapper.xsa zcu102 dts
+		/tools/Xilinx/device-tree-xlnx $(VIVADO_PROJ_DIR)/system_wrapper.xsa zcu102 dts
 	cd dts && gcc -I include -E -nostdinc -undef -D__DTS__ -x assembler-with-cpp -o system.dts system-top.dts
 	dtc -I dts -O dtb -o dts/system.dtb dts/system.dts
 

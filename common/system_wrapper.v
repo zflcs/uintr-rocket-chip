@@ -1,6 +1,8 @@
 `timescale 1 ps / 1 ps
 
 module system_wrapper(
+  input wire UART_rxd,
+  output wire UART_txd,
   output wire [7:0] led
 );
   // MEM_AXI  
@@ -43,10 +45,10 @@ module system_wrapper(
   wire        M_AXI_rlast;
 
   // MMIO_AXI
-  wire        M_MMIO_AXI_awready;
-  wire        M_MMIO_AXI_awvalid;
+  (* mark_debug = "TRUE" *) wire        M_MMIO_AXI_awready;
+  (* mark_debug = "TRUE" *) wire        M_MMIO_AXI_awvalid;
   wire [3:0]  M_MMIO_AXI_awid;
-  wire [31:0] M_MMIO_AXI_awaddr;
+  (* mark_debug = "TRUE" *) wire [31:0] M_MMIO_AXI_awaddr;
   wire [7:0]  M_MMIO_AXI_awlen;
   wire [2:0]  M_MMIO_AXI_awsize;
   wire [1:0]  M_MMIO_AXI_awburst;
@@ -54,19 +56,19 @@ module system_wrapper(
   wire [3:0]  M_MMIO_AXI_awcache;
   wire [2:0]  M_MMIO_AXI_awprot;
   wire [3:0]  M_MMIO_AXI_awqos;
-  wire        M_MMIO_AXI_wready;
-  wire        M_MMIO_AXI_wvalid;
-  wire [63:0] M_MMIO_AXI_wdata;
+  (* mark_debug = "TRUE" *) wire        M_MMIO_AXI_wready;
+  (* mark_debug = "TRUE" *) wire        M_MMIO_AXI_wvalid;
+  (* mark_debug = "TRUE" *) wire [63:0] M_MMIO_AXI_wdata;
   wire [3:0]  M_MMIO_AXI_wstrb;
   wire        M_MMIO_AXI_wlast;
   wire        M_MMIO_AXI_bready;
   wire        M_MMIO_AXI_bvalid;
   wire [3:0]  M_MMIO_AXI_bid;
   wire [1:0]  M_MMIO_AXI_bresp;
-  wire        M_MMIO_AXI_arready;
-  wire        M_MMIO_AXI_arvalid;
+  (* mark_debug = "TRUE" *) wire        M_MMIO_AXI_arready;
+  (* mark_debug = "TRUE" *) wire        M_MMIO_AXI_arvalid;
   wire [3:0]  M_MMIO_AXI_arid;
-  wire [31:0] M_MMIO_AXI_araddr;
+  (* mark_debug = "TRUE" *) wire [31:0] M_MMIO_AXI_araddr;
   wire [7:0]  M_MMIO_AXI_arlen;
   wire [2:0]  M_MMIO_AXI_arsize;
   wire [1:0]  M_MMIO_AXI_arburst;
@@ -74,10 +76,10 @@ module system_wrapper(
   wire [3:0]  M_MMIO_AXI_arcache;
   wire [2:0]  M_MMIO_AXI_arprot;
   wire [3:0]  M_MMIO_AXI_arqos;
-  wire        M_MMIO_AXI_rready;
-  wire        M_MMIO_AXI_rvalid;
+  (* mark_debug = "TRUE" *) wire        M_MMIO_AXI_rready;
+  (* mark_debug = "TRUE" *) wire        M_MMIO_AXI_rvalid;
   wire [3:0]  M_MMIO_AXI_rid;
-  wire [63:0] M_MMIO_AXI_rdata;
+  (* mark_debug = "TRUE" *) wire [63:0] M_MMIO_AXI_rdata;
   wire [1:0]  M_MMIO_AXI_rresp;
   wire        M_MMIO_AXI_rlast;
 
@@ -100,6 +102,9 @@ module system_wrapper(
     .sys_reset          (sys_reset          ),
     .ext_intrs          (ext_intrs          ),
     .led                (led                ),
+
+    .UART_txd           (UART_txd           ),
+    .UART_rxd           (UART_rxd           ),
 
     // slave AXI interface (fpga = master, zynq = slave) connected directly to DDR controller
     .S_AXI_awready      (M_AXI_awready      ),

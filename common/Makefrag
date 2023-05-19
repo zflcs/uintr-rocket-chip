@@ -16,22 +16,16 @@ init:
 build-tools:
 	./build.sh
 
--include $(ROCKET_DIR)/Makefrag
-
 #--------------------------------------------------------------------
 # Testbench generated and simulated by default configurations of rocket chip
 #--------------------------------------------------------------------
 
 test_cycles ?= 100000
-emu = emulator-$(PROJECT)-$(CONFIG)
-riscv_tests = $(RISCV)/riscv64-unknown-elf/share/riscv-tests
-
 test:
-	make -C $(ROCKET_DIR)/emulator/ PROJECT=$(PROJECT) CONFIG=$(CONFIG) MODEL=TestHarness
-	$(ROCKET_DIR)/emulator/$(emu) +max-cycles=$(test_cycles) +verbose $(riscv_tests)/isa/rv64sn-p-csr 2> csr.out
-	$(ROCKET_DIR)/emulator/$(emu) +max-cycles=$(test_cycles) +verbose $(riscv_tests)/isa/rv64sn-p-uintc 2> uintc.out
-	$(ROCKET_DIR)/emulator/$(emu) +max-cycles=$(test_cycles) +verbose $(riscv_tests)/isa/rv64sn-p-uipi 2> uipi.out
+	make -C $(ROCKET_DIR)/emulator/ CONFIG=$(PROJECT).UintrTestConfig timeout_cycles=$(test_cycles) \
+		output/rv64sn-v-csr.vcd
 
+-include $(ROCKET_DIR)/Makefrag
 
 #--------------------------------------------------------------------
 # Rocket-chip verilog source generation

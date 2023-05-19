@@ -12,6 +12,7 @@ class UIPI(opcodes: OpcodeSet)(implicit p: Parameters) extends LazyRoCC(opcodes)
 class UIPIImp(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(outer)
   with HasCoreParameters
   with HasTileParameters {
+
   import UINTCConsts._
   import UintrConsts._
 
@@ -31,13 +32,19 @@ class UIPIImp(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(out
 
   def opAddr(index: UInt) = base.asUInt | (index << log2Ceil(opBytes)).asUInt
 
-  /** UIPI states */
-  val s_idle :: s_wait_mem0 :: s_read_uist :: s_wait_mem1 :: s_check_nack0 :: s_check_nack1 :: s_resp :: Nil = Enum(7)
+  // UIPI states
+  val s_idle :: s_wait_mem0 :: s_read_uist :: s_wait_mem1 :: s_check_nack0 :: s_check_nack1 :: s_resp :: s_error :: Nil = Enum(8)
   val state = RegInit(s_idle)
   val read_uist = state === s_wait_mem0
   val busy = state =/= s_idle
   val read_valid = RegInit(false.B) // keep read funct in register
   val read_rd = RegInit(0.U(5.W))
+
+  // Handle invalid instructions
+  val invalid_funct = !send && !read && !write && !activate && !deactivate
+  val invalid_send = send && !io.uintr.suist.en
+  val invalid_recv = (read || write || activate || deactivate) && !io.uintr.suirs.en
+  val invalid = invalid_funct || invalid_send || invalid_recv
 
   // Control
   io.busy := busy // io.cmd will be held
@@ -58,16 +65,22 @@ class UIPIImp(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(out
 
   // Stage 0: Fire from IDLE
   when(io.cmd.fire) {
-    state := Mux(send, s_wait_mem0, s_wait_mem1)
-    uist_addr := (io.cmd.bits.rs1 << uisteBytes).asUInt + (uintr.suist.base << pgIdxBits)
-    uintc_addr := opAddr(uintr.suirs.index) | Mux(write || read, highOpOffset.asUInt, actOpOffset.asUInt)
-    uintc_data := Mux(write, io.cmd.bits.rs1, Mux(activate, 1.U, 0.U))
-    read_valid := read
-    read_rd := io.cmd.bits.inst.rd
+    when(invalid) {
+      state := s_error
+    }.otherwise {
+      state := Mux(send, s_wait_mem0, s_wait_mem1)
+      uist_addr := (io.cmd.bits.rs1 << uisteBytes).asUInt + (uintr.suist.base << pgIdxBits)
+      uintc_addr := opAddr(uintr.suirs.index) | Mux(write || read, highOpOffset.asUInt, actOpOffset.asUInt)
+      uintc_data := Mux(write, io.cmd.bits.rs1, Mux(activate, 1.U, 0.U))
+      read_valid := read
+      read_rd := io.cmd.bits.inst.rd
+    }
   }
 
   // Stage 1: Load sender status
-  when(state === s_wait_mem0 && io.mem.req.fire) { state := s_read_uist }
+  when(state === s_wait_mem0 && io.mem.req.fire) {
+    state := s_read_uist
+  }
   when(state === s_read_uist && io.mem.resp.valid) {
     val uiste = new UISTE().fromBits(io.mem.resp.bits.data)
     uintc_addr := opAddr(uiste.uirs_idx) | sendOpOffset.asUInt
@@ -75,21 +88,28 @@ class UIPIImp(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(out
     state := s_wait_mem1
   }
 
-  /**
+  /*
    * Stage 2 (common stage): UINTC.
    * MMIO write requests have no response, thus we must check the s2_nack signal to replay the request.
    * s2_nack is always raised 2 cycles after the request.
    */
-  when(state === s_wait_mem1 && io.mem.req.fire) { state := Mux(read_valid, s_resp, s_check_nack0) }
-  when(state === s_check_nack0) { state := s_check_nack1 }
-  when(state === s_check_nack1) { state := Mux(io.mem.s2_nack, s_wait_mem1, s_resp) }
+  when(state === s_wait_mem1 && io.mem.req.fire) {
+    state := Mux(read_valid, s_resp, s_check_nack0)
+  }
+  when(state === s_check_nack0) {
+    state := s_check_nack1
+  }
+  when(state === s_check_nack1) {
+    state := Mux(io.mem.s2_nack, s_wait_mem1, s_resp)
+  }
 
   // Response
-  io.resp.valid := state === s_resp && (io.mem.resp.valid || !read_valid)
-  io.resp.bits.rd := read_rd
+  io.resp.valid := (state === s_resp && (io.mem.resp.valid || !read_valid)) || state === s_error
+  io.resp.bits.rd := Mux(state === s_error || !read_valid, 0.U, read_rd)
   io.resp.bits.data := io.mem.resp.bits.data
   when(io.resp.fire) {
     state := s_idle
     read_valid := false.B
   }
+  when (state === s_error) { state := s_idle }
 }

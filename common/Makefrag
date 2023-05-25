@@ -23,7 +23,7 @@ build-tools:
 test_cycles ?= 100000
 test:
 	make -C $(ROCKET_DIR)/emulator/ CONFIG=$(PROJECT).UintrTestConfig timeout_cycles=$(test_cycles) \
-		output/rv64sn-v-csr.vcd
+		output/rv64sn-p-uipi.vcd
 
 -include $(ROCKET_DIR)/Makefrag
 

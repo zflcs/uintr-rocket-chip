@@ -95,50 +95,58 @@ class UINTC(params: UINTCParams, beatBytes: Int)(implicit p: Parameters) extends
     }
 
     /* UINTC operation fields */
-    val opRegFields = uirs.zipWithIndex.flatMap { case (x, i) =>
-      Seq(
-        sendOffset(i) -> Seq(RegField(64, (),
+
+    val opRegFields = Seq.tabulate(nRecvs) { i =>
+      opOffset(i) -> Seq(
+        RegField(64, (),
           RegWriteFn { (valid, data) =>
-            x.pending := x.pending | (valid << data(5, 0)).asUInt
+            uirs(i).pending := uirs(i).pending | (valid << data(5, 0)).asUInt
             Bool(true)
           },
           Some(RegFieldDesc(
             name = s"send_uipi_$i",
-            desc = s"Send user software interrupt to receiver $i if bits set to 1.")))),
-        lowOffset(i) -> Seq(RegField(64,
-          RegReadFn { ready => (Bool(true), x.asUInt(63, 0)) },
+            desc = s"Send user software interrupt to receiver $i if bits set to 1."))),
+        RegField(64,
+          RegReadFn { ready => (Bool(true), uirs(i).asUInt(63, 0)) },
           RegWriteFn { (valid, data) =>
             when(valid) {
-              x.hartid := data(31, 16)
-              x.mode := data(1)
-              x.active := data(0)
+              uirs(i).hartid := data(31, 16)
+              uirs(i).mode := data(1)
+              uirs(i).active := data(0)
             }
             Bool(true)
           },
           Some(RegFieldDesc(
             name = s"uirs_low_bits_$i",
-            desc = s"User interrupt basic status (active, mode and target hartid) of receiver $i")))),
-        highOffset(i) -> Seq(RegField(64,
+            desc = s"User interrupt basic status (active, mode and target hartid) of receiver $i"))),
+        RegField(64,
           RegReadFn { ready =>
-            when(ready) { x.pending := 0.U }
-            (Bool(true), x.pending)
+            when(ready) {
+              uirs(i).pending := 0.U
+            }
+            (Bool(true), uirs(i).pending)
           },
           RegWriteFn { (valid, data) =>
-            when(valid) { x.pending := x.pending | data }
+            when(valid) {
+              uirs(i).pending := uirs(i).pending | data
+            }
             Bool(true)
           },
           Some(RegFieldDesc(
             name = s"uirs_high_bits_$i",
             desc = s"One bit for each user interrupt vector. There is user-interrupt request for a vector if the corresponding bit is 1.",
             wrType = Some(RegFieldWrType.ONE_TO_SET),
-            rdAction = Some(RegFieldRdAction.CLEAR))))),
-        actOffset(i) -> Seq(RegField(64, (),
+            rdAction = Some(RegFieldRdAction.CLEAR)))),
+        RegField(64, (),
           RegWriteFn { (valid, data) =>
-            when(valid) { x.active := data(0) }
+            when(valid) {
+              uirs(i).active := data(0)
+            }
             Bool(true)
-          }, None))
+          }, None)
       )
     }
+
     node.regmap((opRegFields): _*)
   }
 }

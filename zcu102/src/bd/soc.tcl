@@ -88,7 +88,7 @@ if { ${design_name} eq "" } {
    set errMsg "Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
    set nRet 1
 } elseif { [get_files -quiet ${design_name}.bd] ne "" } {
-   # USE CASES: 
+   # USE CASES:
    #    6) Current opened design, has components, but diff names, design_name exists in project.
    #    7) No opened design, design_name exists in project.
 
@@ -122,7 +122,7 @@ set bCheckIPsPassed 1
 ##################################################################
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
-   set list_check_ips "\ 
+   set list_check_ips "\
 xilinx.com:ip:axi_gpio:*\
 xilinx.com:ip:axi_uart16550:*\
 xilinx.com:ip:axi_uartlite:*\
@@ -571,6 +571,12 @@ proc create_root_design { parentCell } {
 
   # Create instance: proc_sys_reset_0, and set properties
   set proc_sys_reset_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset proc_sys_reset_0 ]
+
+  # Create instance: xlconcat_0, and set properties
+  set xlconcat_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat xlconcat_0 ]
+  set_property -dict [ list \
+   CONFIG.NUM_PORTS {6} \
+ ] $xlconcat_0
 
   # Create instance: xlconcat_1, and set properties
   set xlconcat_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat xlconcat_1 ]
@@ -1565,18 +1571,20 @@ Port;FD4A0000;FD4AFFFF;0|FPD;DPDMA;FD4C0000;FD4CFFFF;0|FPD;DDR_XMPU5_CFG;FD05000
   # Create port connections
   connect_bd_net -net axi_gpio_0_gpio_io_o [get_bd_ports sys_reset] [get_bd_pins axi_gpio_0/gpio_io_o] [get_bd_pins xlconcat_1/In1]
   connect_bd_net -net axi_gpio_1_gpio_io_o [get_bd_pins axi_gpio_1/gpio_io_o] [get_bd_pins xlconcat_1/In2]
+  connect_bd_net -net axi_uart16550_0_ip2intc_irpt [get_bd_pins axi_uart16550_0/ip2intc_irpt] [get_bd_pins xlconcat_0/In0]
   connect_bd_net -net axi_uart16550_0_sout [get_bd_ports UART_txd] [get_bd_pins axi_uart16550_0/sout]
   connect_bd_net -net axi_uartlite_0_interrupt [get_bd_pins axi_uartlite_0/interrupt] [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq0]
   connect_bd_net -net axi_uartlite_0_tx [get_bd_pins axi_uartlite_0/rx] [get_bd_pins axi_uartlite_0/tx]
   connect_bd_net -net clk_wiz_0_clk_100M [get_bd_pins axi_gpio_0/s_axi_aclk] [get_bd_pins axi_gpio_1/s_axi_aclk] [get_bd_pins axi_interconnect_ps/ACLK] [get_bd_pins axi_interconnect_ps/M00_ACLK] [get_bd_pins axi_interconnect_ps/M01_ACLK] [get_bd_pins axi_interconnect_ps/S00_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M00_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M01_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M02_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M03_ACLK] [get_bd_pins axi_uart16550_0/s_axi_aclk] [get_bd_pins axi_uartlite_0/s_axi_aclk] [get_bd_pins clk_wiz_0/clk_100M] [get_bd_pins xxv_eth_dma/xxv_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk]
   connect_bd_net -net clk_wiz_0_clk_50M [get_bd_ports clock] [get_bd_pins axi_interconnect_rocket_mmio/S00_ACLK] [get_bd_pins clk_wiz_0/clk_50M] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins xxv_eth_dma/m_axi_xxv_dma_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk]
   connect_bd_net -net clk_wiz_0_locked [get_bd_pins clk_wiz_0/locked] [get_bd_pins proc_sys_reset_0/dcm_locked]
-  connect_bd_net -net constant_0_dout [get_bd_pins clk_wiz_0/reset] [get_bd_pins constant_0/dout]
+  connect_bd_net -net constant_0_dout [get_bd_pins clk_wiz_0/reset] [get_bd_pins constant_0/dout] [get_bd_pins xlconcat_0/In1] [get_bd_pins xlconcat_0/In2] [get_bd_pins xlconcat_0/In3] [get_bd_pins xlconcat_0/In4] [get_bd_pins xlconcat_0/In5]
   connect_bd_net -net periph_reset_1 [get_bd_pins proc_sys_reset_0/peripheral_reset] [get_bd_pins xxv_eth_dma/periph_reset]
   connect_bd_net -net proc_sys_reset_0_interconnect_aresetn [get_bd_pins axi_interconnect_ps/ARESETN] [get_bd_pins axi_interconnect_rocket_mmio/ARESETN] [get_bd_pins proc_sys_reset_0/interconnect_aresetn] [get_bd_pins xxv_eth_dma/intcon_aresetn]
   connect_bd_net -net proc_sys_reset_0_mb_reset [get_bd_ports reset] [get_bd_pins proc_sys_reset_0/mb_reset] [get_bd_pins xlconcat_1/In0]
   connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins axi_gpio_0/s_axi_aresetn] [get_bd_pins axi_gpio_1/s_axi_aresetn] [get_bd_pins axi_interconnect_ps/M00_ARESETN] [get_bd_pins axi_interconnect_ps/M01_ARESETN] [get_bd_pins axi_interconnect_ps/S00_ARESETN] [get_bd_pins axi_interconnect_rocket_mmio/M00_ARESETN] [get_bd_pins axi_interconnect_rocket_mmio/M01_ARESETN] [get_bd_pins axi_interconnect_rocket_mmio/M02_ARESETN] [get_bd_pins axi_interconnect_rocket_mmio/M03_ARESETN] [get_bd_pins axi_interconnect_rocket_mmio/S00_ARESETN] [get_bd_pins axi_uart16550_0/s_axi_aresetn] [get_bd_pins axi_uartlite_0/s_axi_aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn] [get_bd_pins xxv_eth_dma/periph_aresetn]
   connect_bd_net -net sin_0_1 [get_bd_ports UART_rxd] [get_bd_pins axi_uart16550_0/sin]
+  connect_bd_net -net xlconcat_0_dout [get_bd_ports ext_intrs] [get_bd_pins xlconcat_0/dout]
   connect_bd_net -net xlconcat_1_dout [get_bd_ports led] [get_bd_pins xlconcat_1/dout]
   connect_bd_net -net xxv_eth_dma_sfp_tx_dis_1 [get_bd_ports sfp_tx_dis_1] [get_bd_pins xxv_eth_dma/sfp_tx_dis_1]
   connect_bd_net -net xxv_eth_dma_xxv_dma_intr [get_bd_ports ext_intrs] [get_bd_pins xxv_eth_dma/xxv_dma_intr]

@@ -1,6 +1,7 @@
 package freechips.rocketchip.uintr
 
 import Chisel._
+import chisel3.DontCare
 import freechips.rocketchip.tile._
 import freechips.rocketchip.config.Parameters
 import freechips.rocketchip.rocket._
@@ -87,15 +88,20 @@ class UIPIImp(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(out
     uintc_data := uiste.vector
     state := s_wait_mem1
   }
+  // Why? A cached read is blocked and waiting for replay.
+  when(state === s_read_uist && io.mem.s2_nack) {
+    state := s_wait_mem0
+  }
+
+  // Stage 2 (common stage): UINTC.
+  when(state === s_wait_mem1 && io.mem.req.fire) {
+    state := s_check_nack0
+  }
 
   /*
-   * Stage 2 (common stage): UINTC.
-   * MMIO write requests have no response, thus we must check the s2_nack signal to replay the request.
+   * MEM requests may have no response, thus we must check the s2_nack signal to replay the request.
    * s2_nack is always raised 2 cycles after the request.
    */
-  when(state === s_wait_mem1 && io.mem.req.fire) {
-    state := Mux(read_valid, s_resp, s_check_nack0)
-  }
   when(state === s_check_nack0) {
     state := s_check_nack1
   }
@@ -103,13 +109,13 @@ class UIPIImp(outer: UIPI)(implicit p: Parameters) extends LazyRoCCModuleImp(out
     state := Mux(io.mem.s2_nack, s_wait_mem1, s_resp)
   }
 
-  // Response
+  // Stage 3: Response
   io.resp.valid := (state === s_resp && (io.mem.resp.valid || !read_valid)) || state === s_error
   io.resp.bits.rd := Mux(state === s_error || !read_valid, 0.U, read_rd)
   io.resp.bits.data := io.mem.resp.bits.data
-  when(io.resp.fire) {
+  when(io.resp.fire || state === s_error) {
     state := s_idle
     read_valid := false.B
+    read_rd := 0.U
   }
-  when (state === s_error) { state := s_idle }
 }

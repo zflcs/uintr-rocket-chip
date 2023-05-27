@@ -201,9 +201,9 @@ proc create_hier_cell_xxv_eth_dma { parentCell nameHier } {
   # Create interface pins
   create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M_XXV_DMA_AXI
 
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 gt_ref_clk_0
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 gt_ref_clk
 
-  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:gt_rtl:1.0 gt_serial_port_0
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:gt_rtl:1.0 gt_serial_port
 
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 s_axi_lite_xxv_dma
 
@@ -213,11 +213,12 @@ proc create_hier_cell_xxv_eth_dma { parentCell nameHier } {
   # Create pins
   create_bd_pin -dir I -type rst intcon_aresetn
   create_bd_pin -dir I -type clk m_axi_xxv_dma_aclk
+  create_bd_pin -dir O -type intr mm2s_introut
   create_bd_pin -dir I -type rst periph_aresetn
   create_bd_pin -dir I -type rst periph_reset
+  create_bd_pin -dir O -type intr s2mm_introut
   create_bd_pin -dir O -from 0 -to 0 sfp_tx_dis_1
   create_bd_pin -dir I xxv_aclk
-  create_bd_pin -dir O -from 1 -to 0 xxv_dma_intr
 
   # Create instance: axi_dma_0, and set properties
   set axi_dma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma axi_dma_0 ]
@@ -297,9 +298,6 @@ proc create_hier_cell_xxv_eth_dma { parentCell nameHier } {
   ] $user_tx_rst_n
 
 
-  # Create instance: xlconcat_0, and set properties
-  set xlconcat_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat xlconcat_0 ]
-
   # Create instance: xxv_ctrl_tx_0, and set properties
   set xxv_ctrl_tx_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant xxv_ctrl_tx_0 ]
   set_property -dict [list \
@@ -340,21 +338,21 @@ proc create_hier_cell_xxv_eth_dma { parentCell nameHier } {
   connect_bd_intf_net -intf_net axi_dma_0_M_AXI_S2MM [get_bd_intf_pins axi_dma_0/M_AXI_S2MM] [get_bd_intf_pins axi_interconnect_0/S02_AXI]
   connect_bd_intf_net -intf_net axi_dma_0_M_AXI_SG [get_bd_intf_pins axi_dma_0/M_AXI_SG] [get_bd_intf_pins axi_interconnect_0/S00_AXI]
   connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins M_XXV_DMA_AXI] [get_bd_intf_pins axi_interconnect_0/M00_AXI]
-  connect_bd_intf_net -intf_net gt_ref_clk_0_1 [get_bd_intf_pins gt_ref_clk_0] [get_bd_intf_pins xxv_ethernet_0/gt_ref_clk]
+  connect_bd_intf_net -intf_net gt_ref_clk_0_1 [get_bd_intf_pins gt_ref_clk] [get_bd_intf_pins xxv_ethernet_0/gt_ref_clk]
   connect_bd_intf_net -intf_net rx_data_fifo_M_AXIS [get_bd_intf_pins axi_dma_0/S_AXIS_S2MM] [get_bd_intf_pins rx_data_fifo/M_AXIS]
   connect_bd_intf_net -intf_net s_axi_0_0_1 [get_bd_intf_pins s_axi_xxv_eth] [get_bd_intf_pins xxv_ethernet_0/s_axi_0]
   connect_bd_intf_net -intf_net tx_data_fifo_M_AXIS [get_bd_intf_pins tx_data_fifo/M_AXIS] [get_bd_intf_pins xxv_ethernet_0/axis_tx_0]
   connect_bd_intf_net -intf_net xxv_ethernet_0_axis_rx_0 [get_bd_intf_pins rx_data_fifo/S_AXIS] [get_bd_intf_pins xxv_ethernet_0/axis_rx_0]
-  connect_bd_intf_net -intf_net xxv_ethernet_0_gt_serial_port [get_bd_intf_pins gt_serial_port_0] [get_bd_intf_pins xxv_ethernet_0/gt_serial_port]
+  connect_bd_intf_net -intf_net xxv_ethernet_0_gt_serial_port [get_bd_intf_pins gt_serial_port] [get_bd_intf_pins xxv_ethernet_0/gt_serial_port]
 
   # Create port connections
   connect_bd_net -net ARESETN_0_1 [get_bd_pins intcon_aresetn] [get_bd_pins axi_interconnect_0/ARESETN]
   connect_bd_net -net M00_ACLK_1 [get_bd_pins m_axi_xxv_dma_aclk] [get_bd_pins axi_interconnect_0/M00_ACLK]
   connect_bd_net -net S00_ACLK_1 [get_bd_pins xxv_aclk] [get_bd_pins axi_dma_0/m_axi_sg_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins xxv_ethernet_0/dclk] [get_bd_pins xxv_ethernet_0/s_axi_aclk_0]
   connect_bd_net -net S00_ARESETN_1 [get_bd_pins periph_aresetn] [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins xxv_ethernet_0/s_axi_aresetn_0]
-  connect_bd_net -net axi_dma_0_mm2s_introut [get_bd_pins axi_dma_0/mm2s_introut] [get_bd_pins xlconcat_0/In0]
+  connect_bd_net -net axi_dma_0_mm2s_introut [get_bd_pins mm2s_introut] [get_bd_pins axi_dma_0/mm2s_introut]
   connect_bd_net -net axi_dma_0_mm2s_prmry_reset_out_n [get_bd_pins axi_dma_0/mm2s_prmry_reset_out_n] [get_bd_pins dma_tx_rst/Op1]
-  connect_bd_net -net axi_dma_0_s2mm_introut [get_bd_pins axi_dma_0/s2mm_introut] [get_bd_pins xlconcat_0/In1]
+  connect_bd_net -net axi_dma_0_s2mm_introut [get_bd_pins s2mm_introut] [get_bd_pins axi_dma_0/s2mm_introut]
   connect_bd_net -net axi_dma_0_s2mm_prmry_reset_out_n [get_bd_pins axi_dma_0/s2mm_prmry_reset_out_n] [get_bd_pins dma_rx_rst/Op1]
   connect_bd_net -net dma_rx_rst_Res [get_bd_pins dma_rx_rst/Res] [get_bd_pins xxv_ethernet_0/rx_reset_0]
   connect_bd_net -net dma_tx_rst_Res [get_bd_pins dma_tx_rst/Res] [get_bd_pins xxv_ethernet_0/tx_reset_0]
@@ -362,7 +360,6 @@ proc create_hier_cell_xxv_eth_dma { parentCell nameHier } {
   connect_bd_net -net sys_reset_0_1 [get_bd_pins periph_reset] [get_bd_pins xxv_ethernet_0/sys_reset]
   connect_bd_net -net user_rx_rst_n_Res [get_bd_pins axi_interconnect_0/S02_ARESETN] [get_bd_pins rx_data_fifo/s_axis_aresetn] [get_bd_pins user_rx_rst_n/Res]
   connect_bd_net -net user_tx_rst_n_Res [get_bd_pins axi_interconnect_0/S01_ARESETN] [get_bd_pins tx_data_fifo/s_axis_aresetn] [get_bd_pins user_tx_rst_n/Res]
-  connect_bd_net -net xlconcat_0_dout [get_bd_pins xxv_dma_intr] [get_bd_pins xlconcat_0/dout]
   connect_bd_net -net xxv_ctrl_tx_0_dout [get_bd_pins xxv_ctrl_tx_0/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_idle_0] [get_bd_pins xxv_ethernet_0/ctl_tx_send_lfi_0] [get_bd_pins xxv_ethernet_0/ctl_tx_send_rfi_0] [get_bd_pins xxv_ethernet_0/gtwiz_reset_rx_datapath_0] [get_bd_pins xxv_ethernet_0/gtwiz_reset_tx_datapath_0] [get_bd_pins xxv_ethernet_0/pm_tick_0]
   connect_bd_net -net xxv_ethernet_0_rx_clk_out_0 [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_interconnect_0/S02_ACLK] [get_bd_pins rx_data_fifo/s_axis_aclk] [get_bd_pins xxv_ethernet_0/rx_clk_out_0] [get_bd_pins xxv_ethernet_0/rx_core_clk_0]
   connect_bd_net -net xxv_ethernet_0_tx_clk_out_0 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_interconnect_0/S01_ACLK] [get_bd_pins tx_data_fifo/s_axis_aclk] [get_bd_pins xxv_ethernet_0/tx_clk_out_0]
@@ -495,7 +492,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.ASSOCIATED_BUSIF {S_MMIO_AXI:S_AXI:M_XXV_DMA_AXI} \
  ] $clock
-  set ext_intrs [ create_bd_port -dir O -from 1 -to 0 -type intr ext_intrs ]
+  set ext_intrs [ create_bd_port -dir O -from 5 -to 0 -type intr ext_intrs ]
   set led [ create_bd_port -dir O -from 2 -to 0 led ]
   set reset [ create_bd_port -dir O -type rst reset ]
   set sfp_tx_dis_1 [ create_bd_port -dir O -from 0 -to 0 sfp_tx_dis_1 ]
@@ -574,9 +571,8 @@ proc create_root_design { parentCell } {
 
   # Create instance: xlconcat_0, and set properties
   set xlconcat_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat xlconcat_0 ]
-  set_property -dict [ list \
-   CONFIG.NUM_PORTS {6} \
- ] $xlconcat_0
+  set_property CONFIG.NUM_PORTS {6} $xlconcat_0
+
 
   # Create instance: xlconcat_1, and set properties
   set xlconcat_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat xlconcat_1 ]
@@ -1564,8 +1560,8 @@ Port;FD4A0000;FD4AFFFF;0|FPD;DPDMA;FD4C0000;FD4CFFFF;0|FPD;DDR_XMPU5_CFG;FD05000
   connect_bd_intf_net -intf_net axi_interconnect_rocket_mmio_M00_AXI [get_bd_intf_pins axi_interconnect_rocket_mmio/M00_AXI] [get_bd_intf_pins axi_uart16550_0/S_AXI]
   connect_bd_intf_net -intf_net axi_interconnect_rocket_mmio_M02_AXI [get_bd_intf_pins axi_interconnect_rocket_mmio/M02_AXI] [get_bd_intf_pins xxv_eth_dma/s_axi_lite_xxv_dma]
   connect_bd_intf_net -intf_net axi_interconnect_rocket_mmio_M03_AXI [get_bd_intf_pins axi_interconnect_rocket_mmio/M03_AXI] [get_bd_intf_pins xxv_eth_dma/s_axi_xxv_eth]
-  connect_bd_intf_net -intf_net gt_ref_clk_0_0_1 [get_bd_intf_ports gt_ref_clk] [get_bd_intf_pins xxv_eth_dma/gt_ref_clk_0]
-  connect_bd_intf_net -intf_net xxv_eth_dma_gt_serial_port_0 [get_bd_intf_ports gt_serial_port] [get_bd_intf_pins xxv_eth_dma/gt_serial_port_0]
+  connect_bd_intf_net -intf_net gt_ref_clk_1 [get_bd_intf_ports gt_ref_clk] [get_bd_intf_pins xxv_eth_dma/gt_ref_clk]
+  connect_bd_intf_net -intf_net xxv_eth_dma_gt_serial_port [get_bd_intf_ports gt_serial_port] [get_bd_intf_pins xxv_eth_dma/gt_serial_port]
   connect_bd_intf_net -intf_net xxv_eth_dma_m_axi_xxv_dma [get_bd_intf_ports M_XXV_DMA_AXI] [get_bd_intf_pins xxv_eth_dma/M_XXV_DMA_AXI]
 
   # Create port connections
@@ -1578,7 +1574,7 @@ Port;FD4A0000;FD4AFFFF;0|FPD;DPDMA;FD4C0000;FD4CFFFF;0|FPD;DDR_XMPU5_CFG;FD05000
   connect_bd_net -net clk_wiz_0_clk_100M [get_bd_pins axi_gpio_0/s_axi_aclk] [get_bd_pins axi_gpio_1/s_axi_aclk] [get_bd_pins axi_interconnect_ps/ACLK] [get_bd_pins axi_interconnect_ps/M00_ACLK] [get_bd_pins axi_interconnect_ps/M01_ACLK] [get_bd_pins axi_interconnect_ps/S00_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M00_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M01_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M02_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M03_ACLK] [get_bd_pins axi_uart16550_0/s_axi_aclk] [get_bd_pins axi_uartlite_0/s_axi_aclk] [get_bd_pins clk_wiz_0/clk_100M] [get_bd_pins xxv_eth_dma/xxv_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk]
   connect_bd_net -net clk_wiz_0_clk_50M [get_bd_ports clock] [get_bd_pins axi_interconnect_rocket_mmio/S00_ACLK] [get_bd_pins clk_wiz_0/clk_50M] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins xxv_eth_dma/m_axi_xxv_dma_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk]
   connect_bd_net -net clk_wiz_0_locked [get_bd_pins clk_wiz_0/locked] [get_bd_pins proc_sys_reset_0/dcm_locked]
-  connect_bd_net -net constant_0_dout [get_bd_pins clk_wiz_0/reset] [get_bd_pins constant_0/dout] [get_bd_pins xlconcat_0/In1] [get_bd_pins xlconcat_0/In2] [get_bd_pins xlconcat_0/In3] [get_bd_pins xlconcat_0/In4] [get_bd_pins xlconcat_0/In5]
+  connect_bd_net -net constant_0_dout [get_bd_pins clk_wiz_0/reset] [get_bd_pins constant_0/dout] [get_bd_pins xlconcat_0/In3] [get_bd_pins xlconcat_0/In4] [get_bd_pins xlconcat_0/In5]
   connect_bd_net -net periph_reset_1 [get_bd_pins proc_sys_reset_0/peripheral_reset] [get_bd_pins xxv_eth_dma/periph_reset]
   connect_bd_net -net proc_sys_reset_0_interconnect_aresetn [get_bd_pins axi_interconnect_ps/ARESETN] [get_bd_pins axi_interconnect_rocket_mmio/ARESETN] [get_bd_pins proc_sys_reset_0/interconnect_aresetn] [get_bd_pins xxv_eth_dma/intcon_aresetn]
   connect_bd_net -net proc_sys_reset_0_mb_reset [get_bd_ports reset] [get_bd_pins proc_sys_reset_0/mb_reset] [get_bd_pins xlconcat_1/In0]
@@ -1586,8 +1582,9 @@ Port;FD4A0000;FD4AFFFF;0|FPD;DPDMA;FD4C0000;FD4CFFFF;0|FPD;DDR_XMPU5_CFG;FD05000
   connect_bd_net -net sin_0_1 [get_bd_ports UART_rxd] [get_bd_pins axi_uart16550_0/sin]
   connect_bd_net -net xlconcat_0_dout [get_bd_ports ext_intrs] [get_bd_pins xlconcat_0/dout]
   connect_bd_net -net xlconcat_1_dout [get_bd_ports led] [get_bd_pins xlconcat_1/dout]
+  connect_bd_net -net xxv_eth_dma_mm2s_introut [get_bd_pins xlconcat_0/In1] [get_bd_pins xxv_eth_dma/mm2s_introut]
+  connect_bd_net -net xxv_eth_dma_s2mm_introut [get_bd_pins xlconcat_0/In2] [get_bd_pins xxv_eth_dma/s2mm_introut]
   connect_bd_net -net xxv_eth_dma_sfp_tx_dis_1 [get_bd_ports sfp_tx_dis_1] [get_bd_pins xxv_eth_dma/sfp_tx_dis_1]
-  connect_bd_net -net xxv_eth_dma_xxv_dma_intr [get_bd_ports ext_intrs] [get_bd_pins xxv_eth_dma/xxv_dma_intr]
   connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins clk_wiz_0/clk_in1] [get_bd_pins zynq_ultra_ps_e_0/pl_clk0]
   connect_bd_net -net zynq_ultra_ps_e_0_pl_resetn0 [get_bd_pins proc_sys_reset_0/ext_reset_in] [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0]
 

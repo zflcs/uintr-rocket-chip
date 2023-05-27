@@ -31,4 +31,3 @@ set_property PACKAGE_PIN E4 [get_ports {gt_serial_port_gtx_p}]
 
 # USER_MGT_SI570_CLOCK2_C_P
 set_property PACKAGE_PIN C8 [get_ports gt_ref_clk_clk_p]
-# create_clock -period 6.400 -name gt_ref_clk [get_ports gt_ref_clk_0_0_clk_p]

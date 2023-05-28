@@ -529,35 +529,55 @@ proc create_root_design { parentCell } {
 
   # Create instance: axi_uart16550_0, and set properties
   set axi_uart16550_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_uart16550 axi_uart16550_0 ]
-  set_property CONFIG.C_S_AXI_ACLK_FREQ_HZ {100013920} $axi_uart16550_0
+  set_property CONFIG.C_S_AXI_ACLK_FREQ_HZ {99998000} $axi_uart16550_0
 
 
   # Create instance: axi_uartlite_0, and set properties
   set axi_uartlite_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_uartlite axi_uartlite_0 ]
   set_property -dict [list \
     CONFIG.C_BAUDRATE {115200} \
-    CONFIG.C_S_AXI_ACLK_FREQ_HZ {100013920} \
+    CONFIG.C_S_AXI_ACLK_FREQ_HZ {99998000} \
   ] $axi_uartlite_0
 
 
   # Create instance: clk_wiz_0, and set properties
   set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz clk_wiz_0 ]
   set_property -dict [list \
-    CONFIG.CLKIN1_JITTER_PS {103.11999999999999} \
-    CONFIG.CLKOUT1_JITTER {228.026} \
-    CONFIG.CLKOUT1_PHASE_ERROR {376.192} \
-    CONFIG.CLKOUT2_JITTER {249.755} \
-    CONFIG.CLKOUT2_PHASE_ERROR {376.192} \
+    CONFIG.AUTO_PRIMITIVE {MMCM} \
+    CONFIG.CLKIN1_JITTER_PS {200.0} \
+    CONFIG.CLKOUT1_DRIVES {Buffer} \
+    CONFIG.CLKOUT1_JITTER {139.132} \
+    CONFIG.CLKOUT1_PHASE_ERROR {154.682} \
+    CONFIG.CLKOUT2_DRIVES {Buffer} \
+    CONFIG.CLKOUT2_JITTER {163.701} \
+    CONFIG.CLKOUT2_PHASE_ERROR {154.682} \
     CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {50.000} \
     CONFIG.CLKOUT2_USED {true} \
+    CONFIG.CLKOUT3_DRIVES {Buffer} \
+    CONFIG.CLKOUT4_DRIVES {Buffer} \
+    CONFIG.CLKOUT5_DRIVES {Buffer} \
+    CONFIG.CLKOUT6_DRIVES {Buffer} \
+    CONFIG.CLKOUT7_DRIVES {Buffer} \
+    CONFIG.CLK_IN1_BOARD_INTERFACE {Custom} \
+    CONFIG.CLK_IN2_BOARD_INTERFACE {Custom} \
     CONFIG.CLK_OUT1_PORT {clk_100M} \
     CONFIG.CLK_OUT2_PORT {clk_50M} \
-    CONFIG.MMCM_CLKFBOUT_MULT_F {106.750} \
-    CONFIG.MMCM_CLKIN1_PERIOD {10.312} \
-    CONFIG.MMCM_CLKOUT0_DIVIDE_F {11.500} \
-    CONFIG.MMCM_CLKOUT1_DIVIDE {23} \
-    CONFIG.MMCM_DIVCLK_DIVIDE {9} \
+    CONFIG.ENABLE_CLOCK_MONITOR {false} \
+    CONFIG.FEEDBACK_SOURCE {FDBK_AUTO} \
+    CONFIG.MMCM_BANDWIDTH {OPTIMIZED} \
+    CONFIG.MMCM_CLKFBOUT_MULT_F {24.000} \
+    CONFIG.MMCM_CLKIN1_PERIOD {20.000} \
+    CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
+    CONFIG.MMCM_CLKOUT0_DIVIDE_F {12.000} \
+    CONFIG.MMCM_CLKOUT1_DIVIDE {24} \
+    CONFIG.MMCM_COMPENSATION {AUTO} \
+    CONFIG.MMCM_DIVCLK_DIVIDE {1} \
     CONFIG.NUM_OUT_CLKS {2} \
+    CONFIG.OPTIMIZE_CLOCKING_STRUCTURE_EN {true} \
+    CONFIG.PRIMITIVE {Auto} \
+    CONFIG.RESET_BOARD_INTERFACE {Custom} \
+    CONFIG.USE_LOCKED {false} \
+    CONFIG.USE_RESET {false} \
   ] $clk_wiz_0
 
 
@@ -1101,9 +1121,9 @@ proc create_root_design { parentCell } {
     CONFIG.PSU__CRL_APB__PCAP_CTRL__ACT_FREQMHZ {187.498123} \
     CONFIG.PSU__CRL_APB__PCAP_CTRL__FREQMHZ {200} \
     CONFIG.PSU__CRL_APB__PCAP_CTRL__SRCSEL {IOPLL} \
-    CONFIG.PSU__CRL_APB__PL0_REF_CTRL__ACT_FREQMHZ {96.968727} \
-    CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ {100} \
-    CONFIG.PSU__CRL_APB__PL0_REF_CTRL__SRCSEL {RPLL} \
+    CONFIG.PSU__CRL_APB__PL0_REF_CTRL__ACT_FREQMHZ {49.999500} \
+    CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ {50} \
+    CONFIG.PSU__CRL_APB__PL0_REF_CTRL__SRCSEL {IOPLL} \
     CONFIG.PSU__CRL_APB__PL1_REF_CTRL__ACT_FREQMHZ {100} \
     CONFIG.PSU__CRL_APB__PL2_REF_CTRL__ACT_FREQMHZ {100} \
     CONFIG.PSU__CRL_APB__PL3_REF_CTRL__ACT_FREQMHZ {100} \
@@ -1573,8 +1593,7 @@ Port;FD4A0000;FD4AFFFF;0|FPD;DPDMA;FD4C0000;FD4CFFFF;0|FPD;DDR_XMPU5_CFG;FD05000
   connect_bd_net -net axi_uartlite_0_tx [get_bd_pins axi_uartlite_0/rx] [get_bd_pins axi_uartlite_0/tx]
   connect_bd_net -net clk_wiz_0_clk_100M [get_bd_pins axi_gpio_0/s_axi_aclk] [get_bd_pins axi_gpio_1/s_axi_aclk] [get_bd_pins axi_interconnect_ps/ACLK] [get_bd_pins axi_interconnect_ps/M00_ACLK] [get_bd_pins axi_interconnect_ps/M01_ACLK] [get_bd_pins axi_interconnect_ps/S00_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M00_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M01_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M02_ACLK] [get_bd_pins axi_interconnect_rocket_mmio/M03_ACLK] [get_bd_pins axi_uart16550_0/s_axi_aclk] [get_bd_pins axi_uartlite_0/s_axi_aclk] [get_bd_pins clk_wiz_0/clk_100M] [get_bd_pins xxv_eth_dma/xxv_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk]
   connect_bd_net -net clk_wiz_0_clk_50M [get_bd_ports clock] [get_bd_pins axi_interconnect_rocket_mmio/S00_ACLK] [get_bd_pins clk_wiz_0/clk_50M] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins xxv_eth_dma/m_axi_xxv_dma_aclk] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk]
-  connect_bd_net -net clk_wiz_0_locked [get_bd_pins clk_wiz_0/locked] [get_bd_pins proc_sys_reset_0/dcm_locked]
-  connect_bd_net -net constant_0_dout [get_bd_pins clk_wiz_0/reset] [get_bd_pins constant_0/dout] [get_bd_pins xlconcat_0/In3] [get_bd_pins xlconcat_0/In4] [get_bd_pins xlconcat_0/In5]
+  connect_bd_net -net constant_0_dout [get_bd_pins constant_0/dout] [get_bd_pins xlconcat_0/In3] [get_bd_pins xlconcat_0/In4] [get_bd_pins xlconcat_0/In5]
   connect_bd_net -net periph_reset_1 [get_bd_pins proc_sys_reset_0/peripheral_reset] [get_bd_pins xxv_eth_dma/periph_reset]
   connect_bd_net -net proc_sys_reset_0_interconnect_aresetn [get_bd_pins axi_interconnect_ps/ARESETN] [get_bd_pins axi_interconnect_rocket_mmio/ARESETN] [get_bd_pins proc_sys_reset_0/interconnect_aresetn] [get_bd_pins xxv_eth_dma/intcon_aresetn]
   connect_bd_net -net proc_sys_reset_0_mb_reset [get_bd_ports reset] [get_bd_pins proc_sys_reset_0/mb_reset] [get_bd_pins xlconcat_1/In0]

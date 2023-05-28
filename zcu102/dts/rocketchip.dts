@@ -19,7 +19,7 @@
 	L19: cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
-		timebase-frequency = <500000>;
+		timebase-frequency = <5000000>;
 		L4: cpu@0 {
 			clock-frequency = <50000000>;
 			compatible = "sifive,rocket0", "riscv";
@@ -42,7 +42,7 @@
 			riscv,pmpgranularity = <4>;
 			riscv,pmpregions = <8>;
 			status = "okay";
-			timebase-frequency = <500000>;
+			timebase-frequency = <5000000>;
 			tlb-split;
 			L2: interrupt-controller {
 				#interrupt-cells = <1>;
@@ -72,7 +72,7 @@
 			riscv,pmpgranularity = <4>;
 			riscv,pmpregions = <8>;
 			status = "okay";
-			timebase-frequency = <500000>;
+			timebase-frequency = <5000000>;
 			tlb-split;
 			L5: interrupt-controller {
 				#interrupt-cells = <1>;

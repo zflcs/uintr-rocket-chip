@@ -524,7 +524,10 @@ proc create_root_design { parentCell } {
 
   # Create instance: axi_interconnect_rocket_mmio, and set properties
   set axi_interconnect_rocket_mmio [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect axi_interconnect_rocket_mmio ]
-  set_property CONFIG.NUM_MI {4} $axi_interconnect_rocket_mmio
+  set_property -dict [list \
+    CONFIG.NUM_MI {4} \
+    CONFIG.NUM_SI {1} \
+  ] $axi_interconnect_rocket_mmio
 
 
   # Create instance: axi_uart16550_0, and set properties
@@ -549,9 +552,9 @@ proc create_root_design { parentCell } {
     CONFIG.CLKOUT1_JITTER {139.132} \
     CONFIG.CLKOUT1_PHASE_ERROR {154.682} \
     CONFIG.CLKOUT2_DRIVES {Buffer} \
-    CONFIG.CLKOUT2_JITTER {163.701} \
+    CONFIG.CLKOUT2_JITTER {139.132} \
     CONFIG.CLKOUT2_PHASE_ERROR {154.682} \
-    CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {50.000} \
+    CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {100.000} \
     CONFIG.CLKOUT2_USED {true} \
     CONFIG.CLKOUT3_DRIVES {Buffer} \
     CONFIG.CLKOUT4_DRIVES {Buffer} \
@@ -569,7 +572,7 @@ proc create_root_design { parentCell } {
     CONFIG.MMCM_CLKIN1_PERIOD {20.000} \
     CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
     CONFIG.MMCM_CLKOUT0_DIVIDE_F {12.000} \
-    CONFIG.MMCM_CLKOUT1_DIVIDE {24} \
+    CONFIG.MMCM_CLKOUT1_DIVIDE {12} \
     CONFIG.MMCM_COMPENSATION {AUTO} \
     CONFIG.MMCM_DIVCLK_DIVIDE {1} \
     CONFIG.NUM_OUT_CLKS {2} \

@@ -201,7 +201,6 @@ proc create_root_design { parentCell } {
    CONFIG.AWUSER_WIDTH {1} \
    CONFIG.BUSER_WIDTH {0} \
    CONFIG.DATA_WIDTH {64} \
-   CONFIG.FREQ_HZ {50006960} \
    CONFIG.HAS_BRESP {1} \
    CONFIG.HAS_BURST {1} \
    CONFIG.HAS_CACHE {1} \
@@ -263,7 +262,7 @@ proc create_root_design { parentCell } {
   set UART_txd [ create_bd_port -dir O UART_txd ]
   set clock [ create_bd_port -dir O -type clk clock ]
   set_property -dict [ list \
-   CONFIG.ASSOCIATED_BUSIF {S_MMIO_AXI} \
+   CONFIG.ASSOCIATED_BUSIF {S_MMIO_AXI:S_AXI} \
  ] $clock
   set ext_intrs [ create_bd_port -dir O -from 5 -to 0 -type intr ext_intrs ]
   set led [ create_bd_port -dir O -from 0 -to 0 led ]
@@ -314,13 +313,17 @@ proc create_root_design { parentCell } {
   # Create instance: clk_wiz_0, and set properties
   set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk_wiz_0 ]
   set_property -dict [list \
-    CONFIG.CLKOUT2_JITTER {249.755} \
-    CONFIG.CLKOUT2_PHASE_ERROR {376.192} \
-    CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {50.000} \
+    CONFIG.CLKOUT1_JITTER {245.101} \
+    CONFIG.CLKOUT1_PHASE_ERROR {402.005} \
+    CONFIG.CLKOUT2_JITTER {245.101} \
+    CONFIG.CLKOUT2_PHASE_ERROR {402.005} \
+    CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {100.000} \
     CONFIG.CLKOUT2_USED {true} \
     CONFIG.CLK_OUT1_PORT {clk_100M} \
     CONFIG.CLK_OUT2_PORT {clk_50M} \
-    CONFIG.MMCM_CLKOUT1_DIVIDE {23} \
+    CONFIG.MMCM_CLKFBOUT_MULT_F {102.125} \
+    CONFIG.MMCM_CLKOUT0_DIVIDE_F {11.000} \
+    CONFIG.MMCM_CLKOUT1_DIVIDE {11} \
     CONFIG.NUM_OUT_CLKS {2} \
   ] $clk_wiz_0
 
@@ -422,7 +425,9 @@ SPI Flash#Quad SPI Flash#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#
     CONFIG.PSU__CRL_APB__ADMA_REF_CTRL__ACT_FREQMHZ {533.328003} \
     CONFIG.PSU__CRL_APB__AMS_REF_CTRL__ACT_FREQMHZ {49.999500} \
     CONFIG.PSU__CRL_APB__CAN0_REF_CTRL__ACT_FREQMHZ {99.999001} \
+    CONFIG.PSU__CRL_APB__CAN0_REF_CTRL__SRCSEL {IOPLL} \
     CONFIG.PSU__CRL_APB__CAN1_REF_CTRL__ACT_FREQMHZ {99.999001} \
+    CONFIG.PSU__CRL_APB__CAN1_REF_CTRL__SRCSEL {IOPLL} \
     CONFIG.PSU__CRL_APB__CPU_R5_CTRL__ACT_FREQMHZ {499.994995} \
     CONFIG.PSU__CRL_APB__CPU_R5_CTRL__FREQMHZ {500} \
     CONFIG.PSU__CRL_APB__CPU_R5_CTRL__SRCSEL {IOPLL} \
@@ -669,6 +674,8 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
   # Create address segments
   assign_bd_address -offset 0xA0000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
   assign_bd_address -offset 0xA0010000 -range 0x00001000 -target_address_space [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_uartlite_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x000800000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces S_AXI] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_DDR_HIGH] -force
+  assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces S_AXI] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_DDR_LOW] -force
   assign_bd_address -offset 0x60010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces S_MMIO_AXI] [get_bd_addr_segs axi_gpio_1/S_AXI/Reg] -force
   assign_bd_address -offset 0x60000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces S_MMIO_AXI] [get_bd_addr_segs axi_uart16550_0/S_AXI/Reg] -force
 

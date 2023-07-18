@@ -53,7 +53,7 @@ bootrom:
 
 # Build with custom generator and SoC configurations
 build: bootrom $(rocketchip_rtl)
-	cp $(COMMON_DIR)/system_wrapper.v src/hdl/
+	cp $(COMMON_DIR)/$(BOARD)_system_wrapper.v src/hdl/system_wrapper.v
 
 #--------------------------------------------------------------------
 # Software generation

@@ -9,5 +9,5 @@ gen_bin:
 	cp bitstream.bif ./proj/ && cd proj && bootgen -image bitstream.bif -arch zynqmp -o ./system_wrapper.bit.bin -w
 
 upload:
-	scp proj/system_wrapper.bit.bin proj/pl.dtbo petalinux@192.168.1.2:~
+	scp proj/system_wrapper.bit.bin proj/pl.dtbo root@192.168.1.2:~
 	

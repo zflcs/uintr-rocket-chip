@@ -1,7 +1,7 @@
 `timescale 1 ps / 1 ps
 
 module system_wrapper(
-  input wire UART_rxd,
+  // input wire UART_rxd,
   output wire UART_txd,
   output wire [0:0] led
 );
@@ -104,7 +104,7 @@ module system_wrapper(
     .led                (led                ),
 
     .UART_txd           (UART_txd           ),
-    .UART_rxd           (UART_rxd           ),
+    // .UART_rxd           (UART_rxd           ),
 
     // slave AXI interface (fpga = master, zynq = slave) connected directly to DDR controller
     .S_AXI_awready      (M_AXI_awready      ),

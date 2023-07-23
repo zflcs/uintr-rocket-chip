@@ -8,14 +8,12 @@ module system_wrapper(
   output wire UART_txd,
   output wire [0:0] led,
   output wire mdio_mdc,
-  output wire mdio_mdio_i,
-  output wire mdio_mdio_o,
-  output wire mdio_mdio_t,
+  inout wire mdio_mdio_io,
   output wire phy_reset_n,
-  output wire rgmii_rd,
-  output wire rgmii_rx_ctl,
-  output wire rgmii_rxc,
-  output wire rgmii_td,
+  input wire [3:0]rgmii_rd,
+  input wire rgmii_rx_ctl,
+  input wire rgmii_rxc,
+  output wire [3:0]rgmii_td,
   output wire rgmii_tx_ctl,
   output wire rgmii_txc
 );
@@ -113,6 +111,14 @@ module system_wrapper(
 
   wire reset, sys_reset, clock;
   wire [5:0] ext_intrs;
+  wire mdio_mdio_i;
+  wire mdio_mdio_o;
+  wire mdio_mdio_t;
+  IOBUF mdio_mdio_iobuf
+       (.I(mdio_mdio_o),
+        .IO(mdio_mdio_io),
+        .O(mdio_mdio_i),
+        .T(mdio_mdio_t));
 
   soc system(
     .clock              (clock              ),

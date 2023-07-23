@@ -1,10 +1,28 @@
 `timescale 1 ps / 1 ps
+`include "axi.vh"
 
 module system_wrapper(
   // input wire UART_rxd,
+  input wire eth_clk_clk_p,
+  input wire eth_clk_clk_n,
   output wire UART_txd,
-  output wire [0:0] led
+  output wire [0:0] led,
+  output wire mdio_mdc,
+  output wire mdio_mdio_i,
+  output wire mdio_mdio_o,
+  output wire mdio_mdio_t,
+  output wire phy_reset_n,
+  output wire rgmii_rd,
+  output wire rgmii_rx_ctl,
+  output wire rgmii_rxc,
+  output wire rgmii_td,
+  output wire rgmii_tx_ctl,
+  output wire rgmii_txc
 );
+
+  // XXV_DMA_S_AXI
+  `axi_wire(DMA_AXI, 64, 16);
+  
   // MEM_AXI  
   wire        M_AXI_awready;
   wire        M_AXI_awvalid;
@@ -105,6 +123,23 @@ module system_wrapper(
 
     .UART_txd           (UART_txd           ),
     // .UART_rxd           (UART_rxd           ),
+    
+    `axi_connect_if(M_DMA_AXI, DMA_AXI),
+    
+    // ethernet
+    .eth_clk_clk_p(eth_clk_clk_p),
+    .eth_clk_clk_n(eth_clk_clk_n),
+    .mdio_mdc(mdio_mdc),
+    .mdio_mdio_i(mdio_mdio_i),
+    .mdio_mdio_o(mdio_mdio_o),
+    .mdio_mdio_t(mdio_mdio_t),
+    .phy_reset_n(phy_reset_n),
+    .rgmii_rd(rgmii_rd),
+    .rgmii_rx_ctl(rgmii_rx_ctl),
+    .rgmii_rxc(rgmii_rxc),
+    .rgmii_td(rgmii_td),
+    .rgmii_tx_ctl(rgmii_tx_ctl),
+    .rgmii_txc(rgmii_txc),
 
     // slave AXI interface (fpga = master, zynq = slave) connected directly to DDR controller
     .S_AXI_awready      (M_AXI_awready      ),
@@ -271,7 +306,46 @@ module system_wrapper(
     .io_mmio_axi4_r_bits_id       (M_MMIO_AXI_rid     ),
     .io_mmio_axi4_r_bits_data     (M_MMIO_AXI_rdata   ),
     .io_mmio_axi4_r_bits_resp     (M_MMIO_AXI_rresp   ),
-    .io_mmio_axi4_r_bits_last     (M_MMIO_AXI_rlast   )
+    .io_mmio_axi4_r_bits_last     (M_MMIO_AXI_rlast   ),
+    
+    // DMA
+    .io_l2_frontend_bus_axi4_aw_ready        (DMA_AXI_awready ),
+    .io_l2_frontend_bus_axi4_aw_valid        (DMA_AXI_awvalid ),
+    .io_l2_frontend_bus_axi4_aw_bits_id      (DMA_AXI_awid    ),
+    .io_l2_frontend_bus_axi4_aw_bits_addr    (DMA_AXI_awaddr  ),
+    .io_l2_frontend_bus_axi4_aw_bits_len     (DMA_AXI_awlen   ),
+    .io_l2_frontend_bus_axi4_aw_bits_size    (DMA_AXI_awsize  ),
+    .io_l2_frontend_bus_axi4_aw_bits_burst   (DMA_AXI_awburst ),
+    .io_l2_frontend_bus_axi4_aw_bits_lock    (DMA_AXI_awlock  ),
+    .io_l2_frontend_bus_axi4_aw_bits_cache   (DMA_AXI_awcache ),
+    .io_l2_frontend_bus_axi4_aw_bits_prot    (DMA_AXI_awprot  ),
+    .io_l2_frontend_bus_axi4_aw_bits_qos     (DMA_AXI_awqos   ),
+    .io_l2_frontend_bus_axi4_w_ready         (DMA_AXI_wready  ),
+    .io_l2_frontend_bus_axi4_w_valid         (DMA_AXI_wvalid  ),
+    .io_l2_frontend_bus_axi4_w_bits_data     (DMA_AXI_wdata   ),
+    .io_l2_frontend_bus_axi4_w_bits_strb     (DMA_AXI_wstrb   ),
+    .io_l2_frontend_bus_axi4_w_bits_last     (DMA_AXI_wlast   ),
+    .io_l2_frontend_bus_axi4_b_ready         (DMA_AXI_bready  ),
+    .io_l2_frontend_bus_axi4_b_valid         (DMA_AXI_bvalid  ),
+    .io_l2_frontend_bus_axi4_b_bits_id       (DMA_AXI_bid     ),
+    .io_l2_frontend_bus_axi4_b_bits_resp     (DMA_AXI_bresp   ),
+    .io_l2_frontend_bus_axi4_ar_ready        (DMA_AXI_arready ),
+    .io_l2_frontend_bus_axi4_ar_valid        (DMA_AXI_arvalid ),
+    .io_l2_frontend_bus_axi4_ar_bits_id      (DMA_AXI_arid    ),
+    .io_l2_frontend_bus_axi4_ar_bits_addr    (DMA_AXI_araddr  ),
+    .io_l2_frontend_bus_axi4_ar_bits_len     (DMA_AXI_arlen   ),
+    .io_l2_frontend_bus_axi4_ar_bits_size    (DMA_AXI_arsize  ),
+    .io_l2_frontend_bus_axi4_ar_bits_burst   (DMA_AXI_arburst ),
+    .io_l2_frontend_bus_axi4_ar_bits_lock    (DMA_AXI_arlock  ),
+    .io_l2_frontend_bus_axi4_ar_bits_cache   (DMA_AXI_arcache ),
+    .io_l2_frontend_bus_axi4_ar_bits_prot    (DMA_AXI_arprot  ),
+    .io_l2_frontend_bus_axi4_ar_bits_qos     (DMA_AXI_arqos   ),
+    .io_l2_frontend_bus_axi4_r_ready         (DMA_AXI_rready  ),
+    .io_l2_frontend_bus_axi4_r_valid         (DMA_AXI_rvalid  ),
+    .io_l2_frontend_bus_axi4_r_bits_id       (DMA_AXI_rid     ),
+    .io_l2_frontend_bus_axi4_r_bits_data     (DMA_AXI_rdata   ),
+    .io_l2_frontend_bus_axi4_r_bits_resp     (DMA_AXI_rresp   ),
+    .io_l2_frontend_bus_axi4_r_bits_last     (DMA_AXI_rlast   )
   );
 
 endmodule

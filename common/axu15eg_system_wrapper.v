@@ -3,8 +3,8 @@
 
 module system_wrapper(
   // input wire UART_rxd,
-  input wire eth_clk_clk_p,
-  input wire eth_clk_clk_n,
+  input wire sys_clk_clk_p,
+  input wire sys_clk_clk_n,
   output wire UART_txd,
   output wire [0:0] led,
   output wire mdio_mdc,
@@ -133,8 +133,8 @@ module system_wrapper(
     `axi_connect_if(M_DMA_AXI, DMA_AXI),
     
     // ethernet
-    .eth_clk_clk_p(eth_clk_clk_p),
-    .eth_clk_clk_n(eth_clk_clk_n),
+    .sys_clk_clk_p(sys_clk_clk_p),
+    .sys_clk_clk_n(sys_clk_clk_n),
     .mdio_mdc(mdio_mdc),
     .mdio_mdio_i(mdio_mdio_i),
     .mdio_mdio_o(mdio_mdio_o),

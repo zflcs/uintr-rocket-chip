@@ -227,7 +227,8 @@ proc create_hier_cell_axi_eth_dma { parentCell nameHier } {
   set_property -dict [list \
     CONFIG.PHY_TYPE {RGMII} \
     CONFIG.RXMEM {32k} \
-    CONFIG.Statistics_Counters {false} \
+    CONFIG.Statistics_Counters {true} \
+    CONFIG.Statistics_Reset {true} \
     CONFIG.TXMEM {32k} \
   ] $axi_ethernet_0
 
